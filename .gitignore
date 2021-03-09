@@ -1,0 +1,12 @@
+
+aws01/terraform.tfstate
+
+*.backup
+
+aws01/.terraform/providers/registry.terraform.io/hashicorp/aws/3.31.0/windows_amd64/
+
+*.exe
+
+*.hcl
+
+*.tfstate
