@@ -1,6 +1,6 @@
 provider "aws" {
   profile = "default"
-  region  = "eu-west-1" #Ireland  
+  region  = "eu-west-1" #Ireland 
 }
 
 resource "aws_instance" "example1" {
@@ -10,6 +10,6 @@ resource "aws_instance" "example1" {
   subnet_id              = "subnet-b7b2a5ff"
 
   tags = {
-    Name = "Example1 v2"
+    Name = "Example1 v3"
   }
 }
