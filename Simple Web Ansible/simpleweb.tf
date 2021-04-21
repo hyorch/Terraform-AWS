@@ -1,21 +1,22 @@
-resource "aws_instance" "simpleweb" {
+resource "aws_instance" "simple-web" {
   ami           = "ami-08bac620dc84221eb" #Ubuntu 20.04
   instance_type = "t2.micro"
   vpc_security_group_ids = [aws_security_group.simple-web.id] #SG created below
   key_name = "DevOpsAws" # SSH Key  
+  
   tags = {
     Name = "Simple Web TF+Ansible"
   }
-}
+  
+  provisioner "remote-exec" { #Install Python in the remote machine
+    inline = ["sudo apt-get -qq install python -y"]
+  }
 
-#Install Python in the remote machine
-provisioner "remote-exec" {
-  inline = ["sudo apt-get -qq install python -y"]
-}
+  # Run Ansible to install Apache on created VM
+  provisioner "local-exec" {
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u {var.user} -i '${aws_instance.simple-web.public_ip}' --private-key /home/user-ecs2/.ssh/DevOpsAWS.pem apache.yml"
+  }
 
-# Run Ansible to install Apache on created VM
-provisioner "local-exec" {
-  command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u {var.user} -i '${self.ipv4_address},' --private-key /home/user-ecs2/.ssh/DevOpsAWS.pem apache.yml"
 }
 
 resource "aws_security_group" "simple-web" {
@@ -49,5 +50,5 @@ provider "aws" {
 #Outputs
 output "instance_public_ip" {
   description = "Public IP address of the EC2 instance"
-  value       = aws_instance.example.public_ip
+  value       = aws_instance.simple-web.public_ip
 }
