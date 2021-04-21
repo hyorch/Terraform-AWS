@@ -4,17 +4,25 @@ resource "aws_instance" "simple-web" {
   vpc_security_group_ids = [aws_security_group.simple-web.id] #SG created below
   key_name = "DevOpsAws" # SSH Key  
   
+
   tags = {
     Name = "Simple Web TF+Ansible"
   }
-  
-  provisioner "remote-exec" { #Install Python in the remote machine
-    inline = ["sudo apt-get -qq install python -y"]
+
+  #Install Python in the remote machine
+  provisioner "remote-exec" { 
+    inline = ["sudo apt-get -qq install python3 -y"]
+    connection {
+      host        = aws_instance.simple-web.public_ip
+      type        = "ssh"
+      user        = "ubuntu"
+      private_key = "${file("~/.ssh/DevOpsAWS.pem")}"
+    }
   }
 
   # Run Ansible to install Apache on created VM
   provisioner "local-exec" {
-    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u {var.user} -i '${aws_instance.simple-web.public_ip}' --private-key /home/user-ecs2/.ssh/DevOpsAWS.pem apache.yml"
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu -i '${aws_instance.simple-web.public_ip}', --private-key ~/.ssh/DevOpsAWS.pem apache.yml"
   }
 
 }
@@ -31,6 +39,12 @@ resource "aws_security_group" "simple-web" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress { #all exit
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
