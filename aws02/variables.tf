@@ -5,3 +5,9 @@ variable "instance_name" {
   type        = string
   default     = "ExampleInstance"
 }
+
+variable "ssh_key_name" {
+  description = "SSH Key Name"
+  type        = string
+  default     = "DevOpsAws"
+}
