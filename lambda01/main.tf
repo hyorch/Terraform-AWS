@@ -36,7 +36,8 @@ module "lambda" {
   source  = "terraform-aws-modules/lambda/aws"
   
   function_name = "Lambda_Metrics"
-  handler       = "hello.lambda_handler"
+  #handler       = "hello.lambda_handler"
+  handler       = "function.lambda_handler"
   runtime       = "python3.9"
 
   create_package         = false

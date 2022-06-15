@@ -6,3 +6,4 @@
 *.tfstate
 *.zip
 __pycache__
+lambda01/python/*/
