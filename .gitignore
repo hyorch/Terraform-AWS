@@ -1,6 +1,8 @@
 *.backup
-*/.terraform/*
+.terraform
 */tfplan
 *.exe
 *.hcl
 *.tfstate
+*.zip
+__pycache__

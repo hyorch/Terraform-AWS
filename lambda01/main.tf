@@ -2,65 +2,57 @@ provider "aws" {
   profile = "default"   # awscli default profile
   region = "eu-west-1"
 }
-
-resource "aws_iam_role" "lambda_role" {
-    name   = "Spacelift_Test_Lambda_Function_Role"
-    assume_role_policy = <<EOF
-{
- "Version": "2012-10-17",
- "Statement": [
-   {
-     "Action": "sts:AssumeRole",
-     "Principal": {
-       "Service": "lambda.amazonaws.com"
-     },
-     "Effect": "Allow",
-     "Sid": ""
-   }
- ]
-}
-EOF
-}
-
-resource "aws_iam_policy" "iam_policy_for_lambda" {
- 
-    name         = "aws_iam_policy_for_terraform_aws_lambda_role"
-    path         = "/"
-    description  = "AWS IAM Policy for managing aws lambda role"
-    policy = <<EOF
-{
- "Version": "2012-10-17",
- "Statement": [
-   {
-     "Action": [
-       "logs:CreateLogGroup",
-       "logs:CreateLogStream",
-       "logs:PutLogEvents"
-     ],
-     "Resource": "arn:aws:logs:*:*:*",
-     "Effect": "Allow"
-   }
- ]
-}
-EOF
-}
- 
-resource "aws_iam_role_policy_attachment" "attach_iam_policy_to_iam_role" {
-    role        = aws_iam_role.lambda_role.name
-    policy_arn  = aws_iam_policy.iam_policy_for_lambda.arn
-}
  
 data "archive_file" "zip_the_python_code" {
     type        = "zip"
     source_dir  = "${path.module}/python/"
-    output_path = "${path.module}/python/hello-python.zip"
+    output_path = "${path.module}/python/python_code01.zip"
 }
  
-resource "aws_lambda_function" "terraform_lambda_func" {
-    filename                       = "${path.module}/python/hello-python.zip"
-    function_name                  = "Test_Lambda_Function"
-    role                           = aws_iam_role.lambda_role.arn
-    handler                        = "hello.lambda_handler"
-    runtime                        = "python3.9"
-    depends_on                     = [aws_iam_role_policy_attachment.attach_iam_policy_to_iam_role]
+module "eventbridge" {
+  source = "terraform-aws-modules/eventbridge/aws"
+
+  create_bus = false
+
+  rules = {
+    demo_cron = {
+      description         = "Trigger for a Lambda"
+      schedule_expression = "rate(10 minutes)"
+    }
+  }
+
+  targets = {
+    demo_cron = [
+      {
+        name  = "lambda-demo-cron"       
+        arn   = module.lambda.lambda_function_arn      
+        input = jsonencode({"job": "cron-by-rate"})
+      }
+    ]
+  }
 }
+
+module "lambda" {
+  source  = "terraform-aws-modules/lambda/aws"
+  
+  function_name = "Lambda_Metrics"
+  handler       = "hello.lambda_handler"
+  runtime       = "python3.9"
+
+  create_package         = false
+  local_existing_package = "${path.module}/python/python_code01.zip"
+
+  role_name = "Lambda_Role"
+  attach_policies = true
+  number_of_policies = 1
+  policies = [aws_iam_policy.iam_policy_enable_lambda_metrics.arn]
+
+  create_current_version_allowed_triggers = false
+  allowed_triggers = {
+    ScanAmiRule = {
+      principal  = "events.amazonaws.com"
+      source_arn = module.eventbridge.eventbridge_rule_arns["demo_cron"]
+    }
+  }
+}
+
