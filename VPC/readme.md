@@ -5,7 +5,7 @@ Create a full VPC
 S3 Bucket to store state
 
 ## 02 VPC
-Terraform command to allow create several identical VPCs (multi-environment)
+Run Terraform pointing to a configuration tfvars file.
 
 ```bash
 terraform init -var-file ireland_vars.tfvars 
