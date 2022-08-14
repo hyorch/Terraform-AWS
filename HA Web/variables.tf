@@ -1,4 +1,12 @@
 # Variables
+variable region{
+  default = "eu-west-1" #Ireland 
+}
+
+variable "ssh_key_name" {
+  default = "DevOpsAWS"   
+}
+
 variable "server_port" {
   description = "The port the server will use for HTTP requests"
   type        = number
