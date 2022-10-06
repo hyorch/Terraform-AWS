@@ -12,3 +12,6 @@ aws sts get-caller-identity
 ## Ful VPC Creation
 Use folder VPC to deploy a full Demo VPC
 
+## AWS BluePrints EKS
+https://github.com/aws-ia/terraform-aws-eks-blueprints
+
