@@ -9,7 +9,7 @@ aws configure
 aws sts get-caller-identity 
 ```
 
-## Ful VPC Creation
+## Full VPC Creation
 Use folder VPC to deploy a full Demo VPC
 
 ## AWS BluePrints EKS
