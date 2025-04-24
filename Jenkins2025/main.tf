@@ -45,7 +45,10 @@ resource "aws_instance" "Jenkins" {
     sudo apt install -y fontconfig openjdk-21-jre
     sudo apt-get install -y jenkins
     sudo systemctl enable jenkins
+    sudo snap install aws-cli --classic
   EOF
+
+  iam_instance_profile = aws_iam_instance_profile.jenkins_ec2_profile.name
 
   tags = {
     Name = var.instance_name
@@ -55,18 +58,17 @@ resource "aws_instance" "Jenkins" {
 # Create a security group for Jenkins
 resource "aws_security_group" "sg-jenkins" {
   name = "jenkins-sg"
-  ingress {
-    from_port   = var.server_port
-    to_port     = var.server_port
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+
+  dynamic "ingress" {
+    for_each = var.input_port_list
+    content {
+      from_port   = ingress.value
+      to_port     = ingress.value
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
   }
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+
   egress { #all exits
     from_port   = 0
     to_port     = 0

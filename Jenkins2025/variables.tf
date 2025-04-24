@@ -12,9 +12,8 @@ variable "ssh_key_name" {
   default     = "DevOpsAWS-2025"
 }
 
-
-variable "server_port" {
-  description = "The port the server will use for HTTP requests"
-  type        = number
-  default     = 8080
+variable "input_port_list" {
+  description = "List of ports to open in the security group"
+  type        = list(number)
+  default     = [22, 8080, 9000]
 }
